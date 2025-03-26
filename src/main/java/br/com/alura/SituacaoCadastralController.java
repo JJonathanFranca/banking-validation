@@ -1,9 +1,7 @@
 package br.com.alura;
 
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
+import jakarta.ws.rs.*;
 import org.jboss.resteasy.reactive.RestResponse;
 
 import java.util.List;
@@ -12,9 +10,11 @@ import java.util.List;
 public class SituacaoCadastralController {
 
     private final SituacaoCadastralRepository situacaoCadastralRepository;
+    private final SituacaoCadastralService situacaoCadastralService;
 
-    SituacaoCadastralController(SituacaoCadastralRepository situacaoCadastralRepository) {
+    SituacaoCadastralController(SituacaoCadastralRepository situacaoCadastralRepository, SituacaoCadastralService situacaoCadastralService) {
         this.situacaoCadastralRepository = situacaoCadastralRepository;
+        this.situacaoCadastralService = situacaoCadastralService;
     }
 
     @POST
@@ -35,5 +35,13 @@ public class SituacaoCadastralController {
         if (agencia != null) {
             return RestResponse.ok(agencia);
         } return RestResponse.noContent();
+    }
+
+    @PUT
+    @Transactional
+    @Path("{cnpj}")
+    public RestResponse<Void> inativarAgencia(Agencia agencia) {
+        situacaoCadastralService.alterar(agencia);
+        return RestResponse.ok();
     }
 }

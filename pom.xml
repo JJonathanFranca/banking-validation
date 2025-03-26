@@ -56,6 +56,11 @@
             <artifactId>quarkus-container-image-docker</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-kafka-client</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

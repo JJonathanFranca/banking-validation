@@ -1,22 +1,21 @@
 package br.com.alura;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 
 @ApplicationScoped
 public class SituacaoCadastralService {
 
     private final SituacaoCadastralRepository situacaoCadastralRepository;
-    private final InativarAgenciaProducer inativarAgenciaProducer;
+    private final Event<Agencia> event;
 
-    SituacaoCadastralService(SituacaoCadastralRepository situacaoCadastralRepository, InativarAgenciaProducer inativarAgenciaProducer) {
+    SituacaoCadastralService(SituacaoCadastralRepository situacaoCadastralRepository, InativarAgenciaProducer inativarAgenciaProducer, Event<Agencia> event) {
         this.situacaoCadastralRepository = situacaoCadastralRepository;
-        this.inativarAgenciaProducer = inativarAgenciaProducer;
+        this.event = event;
     }
 
     public void alterar(Agencia agencia) {
         situacaoCadastralRepository.update("situacaoCadastral = ?1 where cnpj = ?2", agencia.getSituacaoCadastral(), agencia.getCnpj());
-        if (agencia.getSituacaoCadastral().equals("INATIVO")) {
-            inativarAgenciaProducer.enviarMensagem("remover-agencia", agencia);
-        }
+        event.fire(agencia);
     }
 }

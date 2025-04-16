@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-validation
+  namespace: banking-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-validation
+  template:
+    metadata:
+      labels:
+        app: postgres-validation
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:14
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "joao"
+            - name: POSTGRES_PASSWORD
+              value: "joao"
+            - name: POSTGRES_DB
+              value: "agencia"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-validation-storage
+            - mountPath: /docker-entrypoint-initdb.d
+              name: init-validation-scripts
+      volumes:
+        - name: postgres-validation-storage
+          emptyDir: {}
+        - name: init-validation-scripts
+          configMap:
+            name: postgres-validation-init-scripts

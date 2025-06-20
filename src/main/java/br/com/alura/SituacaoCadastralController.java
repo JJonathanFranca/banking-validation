@@ -1,5 +1,9 @@
 package br.com.alura;
 
+import io.quarkus.hibernate.reactive.panache.common.WithSession;
+import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
+import io.smallrye.common.annotation.NonBlocking;
+import io.smallrye.mutiny.Uni;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -18,22 +22,25 @@ public class SituacaoCadastralController {
     }
 
     @POST
-    @Transactional
-    public void cadastrar(Agencia agencia) {
-        this.situacaoCadastralRepository.persist(agencia);
+    @WithTransaction
+    @NonBlocking
+    public Uni<Void> cadastrar(Agencia agencia) {
+        return this.situacaoCadastralRepository.persist(agencia).replaceWithVoid();
     }
 
     @GET
-    public List<Agencia> buscarTodos() {
-        return this.situacaoCadastralRepository.findAll().stream().toList();
+    @WithSession
+    public Uni<List<Agencia>> buscarTodos() {
+        return this.situacaoCadastralRepository.findAll().list();
     }
 
     @GET
+    @WithSession
     @Path("{cnpj}")
-    public RestResponse<Agencia> buscarPorCnpj(String cnpj) {
-        Agencia agencia = this.situacaoCadastralRepository.findByCnpj(cnpj);
-        if (agencia != null) {
-            return RestResponse.ok(agencia);
-        } return RestResponse.noContent();
-    }
+    public Uni<RestResponse<Agencia>> buscarPorCnpj(String cnpj) {
+        Uni<Agencia> agencia = this.situacaoCadastralRepository.findByCnpj(cnpj);
+        return agencia
+                // .onItem().ifNull().continueWith(RestResponse.noContent()) to do -> if null, retornar no content
+                .onItem().ifNotNull().transform(RestResponse::ok);
+        }
 }

@@ -25,18 +25,24 @@ public class InativarAgenciaProducer {
     public Uni<Void> enviarMensagemKafkaConfiguration(Agencia agencia) {
         try {
             String agenciaConvertida = objectMapper.writeValueAsString(agencia);
-            return kafkaConfiguration.enviarMensagem("remover-agencia", "", agenciaConvertida);
+            if (agencia.getSituacaoCadastral().equals("INATIVO")) {
+                return kafkaConfiguration.enviarMensagem("remover-agencia", "", agenciaConvertida);
+            }
         } catch (JsonProcessingException e) {
             return Uni.createFrom().failure(e);
         }
+        return Uni.createFrom().nullItem();
     }
 
     public Uni<Void> enviarMensagemSmallRyeMutinyEmiter(Agencia agencia) {
         try {
             String agenciaConvertida = objectMapper.writeValueAsString(agencia);
-            return emitter.send(agenciaConvertida);
+            if (agencia.getSituacaoCadastral().equals("INATIVO")) {
+                return emitter.send(agenciaConvertida);
+            }
         } catch (JsonProcessingException e) {
             return Uni.createFrom().failure(e);
         }
+        return Uni.createFrom().nullItem();
     }
 }

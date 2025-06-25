@@ -13,14 +13,24 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 @ApplicationScoped
 public class InativarAgenciaProducer {
 
-    private Emitter<String> emitter;
-
     private final ObjectMapper objectMapper;
+    private final Emitter<String> emitter;
 
     public InativarAgenciaProducer(@Channel("remover-agencia-channel") Emitter<String> emitter) {
         this.objectMapper = new ObjectMapper();
         this.emitter = emitter;
     }
 
-
+    public Uni<Void> processarEvento(@ObservesAsync Agencia agencia) {
+        try {
+            String agenciaConvertida = objectMapper.writeValueAsString(agencia);
+            return Uni.createFrom()
+                    .completionStage(() -> emitter.send(agenciaConvertida))
+                    .emitOn(Infrastructure.getDefaultExecutor())
+                    .log("To aqui")
+                    .replaceWithVoid();
+        } catch (JsonProcessingException e) {
+            return Uni.createFrom().failure(e);
+        }
+    }
 }

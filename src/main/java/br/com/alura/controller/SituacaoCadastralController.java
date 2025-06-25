@@ -5,6 +5,7 @@ import br.com.alura.domain.Agencia;
 import br.com.alura.service.SituacaoCadastralService;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.common.annotation.NonBlocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.GET;
@@ -50,6 +51,7 @@ public class SituacaoCadastralController {
     }
 
     @PUT
+    @Blocking
     public Uni<RestResponse<Void>> alterar(Agencia agencia) {
         return situacaoCadastralService.alterar(agencia).replaceWith(RestResponse.ok());
     }

@@ -4,7 +4,6 @@ import br.com.alura.domain.Agencia;
 import br.com.alura.messaging.InativarAgenciaProducer;
 import br.com.alura.repository.SituacaoCadastralRepository;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
-import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -21,6 +20,10 @@ public class SituacaoCadastralService {
 
     @WithTransaction
     public Uni<Void> alterar(Agencia agencia) {
-
+        return situacaoCadastralRepository
+                .update("situacaoCadastral = ?1 where cnpj = ?2",
+                        agencia.getSituacaoCadastral(), agencia.getCnpj())
+                .call(() -> producer.processarEvento(agencia))
+                .replaceWithVoid();
     }
 }

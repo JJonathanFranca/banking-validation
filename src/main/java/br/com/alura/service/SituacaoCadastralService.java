@@ -24,6 +24,7 @@ public class SituacaoCadastralService {
                 .update("situacaoCadastral = ?1 where cnpj = ?2",
                         agencia.getSituacaoCadastral(), agencia.getCnpj())
                 .call(() -> producer.enviarMensagemSmallRyeMutinyEmitter(agencia))
+                .call(() -> producer.enviarMensagemKafkaConfiguration(agencia))
                 .replaceWithVoid();
     }
 }

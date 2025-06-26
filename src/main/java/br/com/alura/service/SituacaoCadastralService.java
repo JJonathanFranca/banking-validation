@@ -23,7 +23,7 @@ public class SituacaoCadastralService {
         return situacaoCadastralRepository
                 .update("situacaoCadastral = ?1 where cnpj = ?2",
                         agencia.getSituacaoCadastral(), agencia.getCnpj())
-                .call(() -> producer.processarEvento(agencia))
+                .call(() -> producer.enviarMensagemSmallRyeMutinyEmitter(agencia))
                 .replaceWithVoid();
     }
 }

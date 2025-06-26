@@ -1,8 +1,8 @@
 package br.com.alura.service;
 
 import br.com.alura.domain.Agencia;
-import br.com.alura.messaging.InativarAgenciaProducer;
 import br.com.alura.repository.SituacaoCadastralRepository;
+import br.com.alura.service.events.EventBusProducer;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,11 +11,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class SituacaoCadastralService {
 
     private final SituacaoCadastralRepository situacaoCadastralRepository;
-    private final InativarAgenciaProducer producer;
+    private final EventBusProducer event;
 
-    public SituacaoCadastralService(SituacaoCadastralRepository situacaoCadastralRepository, InativarAgenciaProducer producer) {
+    public SituacaoCadastralService(SituacaoCadastralRepository situacaoCadastralRepository, EventBusProducer event) {
         this.situacaoCadastralRepository = situacaoCadastralRepository;
-        this.producer = producer;
+        this.event = event;
     }
 
     @WithTransaction
@@ -23,7 +23,9 @@ public class SituacaoCadastralService {
         return situacaoCadastralRepository
                 .update("situacaoCadastral = ?1 where cnpj = ?2",
                         agencia.getSituacaoCadastral(), agencia.getCnpj())
-                .call(() -> producer.processarEvento(agencia))
-                .replaceWithVoid();
+                .onItem()
+                    .transformToUni(t -> event.publicaRemocaoAgencia(agencia))
+                .onItem()
+                    .ignore().andContinueWithNull();
     }
 }
